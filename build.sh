@@ -14,16 +14,34 @@ which docker
 
 # Generate a key to sign APK packages with
 if [ ! -f my-release-key.keystore ]; then
-  keytool -genkey -v -storepass testtest -keystore my-release-key.keystore -alias testtest -keyalg RSA -keysize 2048 -validity 10000 \
+  keytool -genkey \
+    -v \
+    -storepass testtest \
+    -keystore my-release-key.keystore \
+    -alias testtest \
+    -keyalg RSA \
+    -keysize 2048 \
+    -validity 10000 \
     -dname "cn=Test Test, ou=Test, o=Test, c=AU"
 fi
 
 # Grab the Signal source code / or update the local dir with the source code in it
-git clone https://github.com/signalapp/Signal-Android || (cd Signal-Android && git reset --hard && (git checkout main || true) && git pull)
+git clone https://github.com/signalapp/Signal-Android \
+  || (cd Signal-Android && git reset --hard && (git checkout main || true) && git pull)
 cd Signal-Android
 
 for SIGNAL_TAG in $versions; do
 
+  # different versions need slightly different patches
+  v=$(echo $SIGNAL_TAG | tr -d '.v')
+  patch="patch-001-forced-upgrades-6.5.0.diff"
+  if [ "$v" -gt 680 ]; then
+    patch="patch-001-forced-upgrades-6.8.1.diff"
+  elif [ "$v" -gt 689 ]; then
+    patch="patch-001-forced-upgrades-6.9.0.diff"
+  fi
+
+  # skip previously built tags
   if [ -d ../${SIGNAL_TAG} ]; then
     echo "Skipping: ${SIGNAL_TAG}"
 
@@ -32,13 +50,13 @@ for SIGNAL_TAG in $versions; do
     git reset --hard
     git checkout main
     git checkout ${SIGNAL_TAG}
-    git apply ../patch-001-forced-upgrades.diff
+    git apply ../${patch}
     (cd reproducible-builds && docker build -t signal-android:${SIGNAL_TAG} .)
     docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} ./gradlew clean assemblePlayProdRelease
 
     mkdir -p ../${SIGNAL_TAG}
     find ./app/build/outputs/ -name "*.apk" -exec cp {} ../${SIGNAL_TAG}/ \;
-    docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} rm -rf /project/app/build/outputs/  || true
+    docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} rm -rf /project/app/build/outputs/ || true
 
     # Sign the apks (android won't let you install them otherwise)
     for i in ../${SIGNAL_TAG}/*.apk; do
