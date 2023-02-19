@@ -38,5 +38,6 @@ a legit version of Signal from upstream and restore a backup.
 They could have just added an option to their app's settings like:
 
 
+![signal](https://user-images.githubusercontent.com/2713116/219929440-b547fa63-d0bc-440e-a9f0-5595d2c14b83.png)
 
 
