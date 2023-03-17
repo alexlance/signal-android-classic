@@ -5,7 +5,7 @@
 set -euxo pipefail
 
 # Which versions of Signal to build APKs for
-versions="v6.5.0 v6.5.1 v6.5.2 v6.5.3 v6.5.4 v6.5.5 v6.5.6 v6.6.0 v6.6.1 v6.6.2 v6.6.3 v6.7.0 v6.7.1 v6.7.2 v6.7.3 v6.7.4 v6.7.5 v6.7.6 v6.8.0 v6.8.1 v6.8.2 v6.8.3 v6.9.0 v6.9.1 v6.9.2 v6.10.0 v6.10.1 v6.10.2 v6.10.3 v6.10.4 v6.10.5 v6.10.6 v6.10.7 v6.10.8 v6.10.9 v6.11.0 v6.11.1 v6.11.2 v6.11.3 v6.11.4 v6.11.5 v6.11.6 v6.11.7 v6.12.0 v6.12.1 v6.12.2 v6.12.3 v6.12.4"
+versions="v6.5.0 v6.5.1 v6.5.2 v6.5.3 v6.5.4 v6.5.5 v6.5.6 v6.6.0 v6.6.1 v6.6.2 v6.6.3 v6.7.0 v6.7.1 v6.7.2 v6.7.3 v6.7.4 v6.7.5 v6.7.6 v6.8.0 v6.8.1 v6.8.2 v6.8.3 v6.9.0 v6.9.1 v6.9.2 v6.10.0 v6.10.1 v6.10.2 v6.10.3 v6.10.4 v6.10.5 v6.10.6 v6.10.7 v6.10.8 v6.10.9 v6.11.0 v6.11.1 v6.11.2 v6.11.3 v6.11.4 v6.11.5 v6.11.6 v6.11.7 v6.12.0 v6.12.1 v6.12.2 v6.12.3 v6.12.4 v6.13.8 v6.14.4"
 
 # Check that we have some of the tools installed
 which keytool
@@ -26,19 +26,24 @@ if [ ! -f my-release-key.keystore ]; then
 fi
 
 # Grab the Signal source code / or update the local dir with the source code in it
-git clone https://github.com/signalapp/Signal-Android \
-  || (cd Signal-Android && git reset --hard && (git checkout main || true) && git pull)
+git clone https://github.com/signalapp/Signal-Android ||
+  (cd Signal-Android && git reset --hard && (git checkout main || true) && git pull)
 cd Signal-Android
 
 for SIGNAL_TAG in $versions; do
 
   # different versions need slightly different patches
   v=$(echo $SIGNAL_TAG | tr -d '.v')
+
   patch="patch-001-forced-upgrades-6.5.0.diff"
-  if [ "$v" -gt 680 ]; then
-    patch="patch-001-forced-upgrades-6.8.1.diff"
+  if [ "$v" -gt 6143 ]; then
+    patch="patch-001-forced-upgrades-6.14.4.diff patch-002-force-enable-sms-6.13.8.diff"
+  elif [ "$v" -gt 6137 ]; then
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.13.8.diff"
   elif [ "$v" -gt 689 ]; then
     patch="patch-001-forced-upgrades-6.9.0.diff"
+  elif [ "$v" -gt 680 ]; then
+    patch="patch-001-forced-upgrades-6.8.1.diff"
   fi
 
   # skip previously built tags
@@ -50,7 +55,9 @@ for SIGNAL_TAG in $versions; do
     git reset --hard
     git checkout main
     git checkout ${SIGNAL_TAG}
-    git apply ../${patch}
+    for p in $patch; do
+      git apply ../$p
+    done
     (cd reproducible-builds && docker build -t signal-android:${SIGNAL_TAG} .)
     docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} ./gradlew clean assemblePlayProdRelease
 

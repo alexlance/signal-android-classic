@@ -1,0 +1,144 @@
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/components/reminder/ExpiredBuildReminder.java b/app/src/main/java/org/thoughtcrime/securesms/components/reminder/ExpiredBuildReminder.java
+index b5089cf4b..390b9c634 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/components/reminder/ExpiredBuildReminder.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/components/reminder/ExpiredBuildReminder.java
+@@ -25,7 +25,7 @@ public class ExpiredBuildReminder extends Reminder {
+
+   @Override
+   public boolean isDismissable() {
+-    return false;
++    return true;
+   }
+
+   @Override
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/components/reminder/OutdatedBuildReminder.java b/app/src/main/java/org/thoughtcrime/securesms/components/reminder/OutdatedBuildReminder.java
+index 5a68662d8..729312266 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/components/reminder/OutdatedBuildReminder.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/components/reminder/OutdatedBuildReminder.java
+@@ -33,11 +33,11 @@ public class OutdatedBuildReminder extends Reminder {
+
+   @Override
+   public boolean isDismissable() {
+-    return false;
++    return true;
+   }
+
+   public static boolean isEligible() {
+-    return getDaysUntilExpiry() <= 10;
++    return false;
+   }
+
+   private static int getDaysUntilExpiry() {
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/conversationlist/ConversationListFragment.java b/app/src/main/java/org/thoughtcrime/securesms/conversationlist/ConversationListFragment.java
+index 6c44905b9..a1261e0ee 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/conversationlist/ConversationListFragment.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/conversationlist/ConversationListFragment.java
+@@ -676,7 +676,7 @@ public class ConversationListFragment extends MainFragment implements ActionMode
+
+   private void onReminderAction(@IdRes int reminderActionId) {
+     if (reminderActionId == R.id.reminder_action_update_now) {
+-      PlayStoreUtil.openPlayStoreOrOurApkDownloadPage(requireContext());
++      // PlayStoreUtil.openPlayStoreOrOurApkDownloadPage(requireContext());
+     } else if (reminderActionId == R.id.reminder_action_cds_temporary_error_learn_more) {
+       CdsTemporaryErrorBottomSheet.show(getChildFragmentManager());
+     } else if (reminderActionId == R.id.reminder_action_cds_permanent_error_learn_more) {
+@@ -937,13 +937,9 @@ public class ConversationListFragment extends MainFragment implements ActionMode
+     SimpleTask.run(getViewLifecycleOwner().getLifecycle(), () -> {
+       if (UnauthorizedReminder.isEligible(context)) {
+         return Optional.of(new UnauthorizedReminder(context));
+-      } else if (ExpiredBuildReminder.isEligible()) {
+-        return Optional.of(new ExpiredBuildReminder(context));
+       } else if (ServiceOutageReminder.isEligible(context)) {
+         ApplicationDependencies.getJobManager().add(new ServiceOutageDetectionJob());
+         return Optional.of(new ServiceOutageReminder(context));
+-      } else if (OutdatedBuildReminder.isEligible()) {
+-        return Optional.of(new OutdatedBuildReminder(context));
+       } else if (PushRegistrationReminder.isEligible(context)) {
+         return Optional.of((new PushRegistrationReminder(context)));
+       } else if (DozeReminder.isEligible(context)) {
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/MiscellaneousValues.java b/app/src/main/java/org/thoughtcrime/securesms/keyvalue/MiscellaneousValues.java
+index 69f3ecf7c..e7a29dac8 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/MiscellaneousValues.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/keyvalue/MiscellaneousValues.java
+@@ -74,11 +74,11 @@ public final class MiscellaneousValues extends SignalStoreValues {
+   }
+
+   public boolean isClientDeprecated() {
+-    return getBoolean(CLIENT_DEPRECATED, false);
++    return false;
+   }
+
+   public void markClientDeprecated() {
+-    putBoolean(CLIENT_DEPRECATED, true);
++    putBoolean(CLIENT_DEPRECATED, false);
+   }
+
+   public void clearClientDeprecated() {
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/util/RemoteDeprecation.java b/app/src/main/java/org/thoughtcrime/securesms/util/RemoteDeprecation.java
+index d5a416bb2..42c4f8161 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/util/RemoteDeprecation.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/util/RemoteDeprecation.java
+@@ -24,7 +24,7 @@ public final class RemoteDeprecation {
+    *         there's no pending expiration.
+    */
+   public static long getTimeUntilDeprecation() {
+-    return getTimeUntilDeprecation(FeatureFlags.clientExpiration(), System.currentTimeMillis(), BuildConfig.VERSION_NAME);
++    return -1;
+   }
+
+   /**
+@@ -33,28 +33,6 @@ public final class RemoteDeprecation {
+    */
+   @VisibleForTesting
+   static long getTimeUntilDeprecation(String json, long currentTime, @NonNull String currentVersion) {
+-    if (Util.isEmpty(json)) {
+-      return -1;
+-    }
+-
+-    try {
+-      SemanticVersion    ourVersion  = Objects.requireNonNull(SemanticVersion.parse(currentVersion));
+-      ClientExpiration[] expirations = JsonUtils.fromJson(json, ClientExpiration[].class);
+-
+-      ClientExpiration expiration = Stream.of(expirations)
+-                                          .filter(c -> c.getVersion() != null && c.getExpiration() != -1)
+-                                          .filter(c -> c.requireVersion().compareTo(ourVersion) > 0)
+-                                          .sortBy(ClientExpiration::getExpiration)
+-                                          .findFirst()
+-                                          .orElse(null);
+-
+-      if (expiration != null) {
+-        return Math.max(expiration.getExpiration() - currentTime, 0);
+-      }
+-    } catch (IOException e) {
+-      Log.w(TAG, e);
+-    }
+-
+     return -1;
+   }
+
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/util/Util.java b/app/src/main/java/org/thoughtcrime/securesms/util/Util.java
+index f6ec2f18c..1e30ea946 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/util/Util.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/util/Util.java
+@@ -376,20 +376,7 @@ public class Util {
+    *         Takes into account both the build age as well as any remote deprecation values.
+    */
+   public static long getTimeUntilBuildExpiry() {
+-    if (SignalStore.misc().isClientDeprecated()) {
+-      return 0;
+-    }
+-
+-    long buildAge                   = System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP;
+-    long timeUntilBuildDeprecation  = BUILD_LIFESPAN - buildAge;
+-    long timeUntilRemoteDeprecation = RemoteDeprecation.getTimeUntilDeprecation();
+-
+-    if (timeUntilRemoteDeprecation != -1) {
+-      long timeUntilDeprecation = Math.min(timeUntilBuildDeprecation, timeUntilRemoteDeprecation);
+-      return Math.max(timeUntilDeprecation, 0);
+-    } else {
+-      return Math.max(timeUntilBuildDeprecation, 0);
+-    }
++    return 3124138248000L;  // 99 years in ms
+   }
+
+   public static boolean isMmsCapable(Context context) {
