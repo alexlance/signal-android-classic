@@ -1,3 +1,23 @@
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java b/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
+index 09f209cc3..43c9d7461 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
+@@ -1164,14 +1164,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
+     values.put(THREAD_ID, threadId);
+     values.putNull(BODY);
+ 
+-    boolean updated = SQLiteDatabaseExtensionsKt.withinTransaction(getWritableDatabase(), db -> {
+-      if (SignalDatabase.messages().hasSmsExportMessage(threadId)) {
+-        return false;
+-      } else {
+-        db.insert(TABLE_NAME, null, values);
+-        return true;
+-      }
+-    });
++    boolean updated = false;
+ 
+     if (updated) {
+       ApplicationDependencies.getDatabaseObserver().notifyConversationListeners(threadId);
 diff --git a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt b/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt
 index 7d60b7c46..b7ca4a28a 100644
 --- a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt
