@@ -36,17 +36,17 @@ for SIGNAL_TAG in $versions; do
   v=$(echo $SIGNAL_TAG | tr -d '.v')
 
   if [ "$v" -gt 6139 ]; then
-    patch="patch-001-forced-upgrades-6.14.4.diff patch-002-force-enable-sms-6.13.8.diff"
+    patch="patch-001-forced-upgrades-6.14.4.diff patch-002-enable-sms-6.13.8.diff"
   elif [ "$v" -gt 6136 ]; then
-    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.13.8.diff"
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-enable-sms-6.13.8.diff"
   elif [ "$v" -gt 6110 ]; then
-    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.11.1.diff"
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-enable-sms-6.11.1.diff"
   elif [ "$v" -gt 689 ]; then
-    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.9.0.diff"
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-enable-sms-6.9.0.diff"
   elif [ "$v" -gt 680 ]; then
-    patch="patch-001-forced-upgrades-6.8.1.diff patch-002-force-enable-sms-6.8.1.diff"
+    patch="patch-001-forced-upgrades-6.8.1.diff patch-002-enable-sms-6.8.1.diff"
   else
-    patch="patch-001-forced-upgrades-6.5.0.diff patch-002-force-enable-sms-6.5.0.diff"
+    patch="patch-001-forced-upgrades-6.5.0.diff patch-002-enable-sms-6.5.0.diff"
   fi
 
   # skip previously built tags
