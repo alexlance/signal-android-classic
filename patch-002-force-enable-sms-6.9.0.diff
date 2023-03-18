@@ -1,0 +1,98 @@
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java b/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
+index 09f209cc3..43c9d7461 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
++++ b/app/src/main/java/org/thoughtcrime/securesms/database/MessageTable.java
+@@ -1164,14 +1164,7 @@ public class MessageTable extends DatabaseTable implements MessageTypes, Recipie
+     values.put(THREAD_ID, threadId);
+     values.putNull(BODY);
+
+-    boolean updated = SQLiteDatabaseExtensionsKt.withinTransaction(getWritableDatabase(), db -> {
+-      if (SignalDatabase.messages().hasSmsExportMessage(threadId)) {
+-        return false;
+-      } else {
+-        db.insert(TABLE_NAME, null, values);
+-        return true;
+-      }
+-    });
++    boolean updated = false;
+
+     if (updated) {
+       ApplicationDependencies.getDatabaseObserver().notifyConversationListeners(threadId);
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt b/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt
+index 7d60b7c46..b7ca4a28a 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt
++++ b/app/src/main/java/org/thoughtcrime/securesms/keyvalue/SmsExportPhase.kt
+@@ -6,29 +6,29 @@ import kotlin.time.Duration.Companion.days
+
+ enum class SmsExportPhase(val duration: Long) {
+   PHASE_1(0.days.inWholeMilliseconds),
+-  PHASE_2(45.days.inWholeMilliseconds),
+-  PHASE_3(105.days.inWholeMilliseconds);
++  PHASE_2(40000.days.inWholeMilliseconds),
++  PHASE_3(40001.days.inWholeMilliseconds);
+
+   fun allowSmsFeatures(): Boolean {
+     return Util.isDefaultSmsProvider(ApplicationDependencies.getApplication()) && SignalStore.misc().smsExportPhase.isSmsSupported()
+   }
+
+   fun isSmsSupported(): Boolean {
+-    return this != PHASE_3
++    return true
+   }
+
+   fun isFullscreen(): Boolean {
+-    return this.ordinal > PHASE_1.ordinal
++    return false
+   }
+
+   fun isBlockingUi(): Boolean {
+-    return this == PHASE_3
++    return false
+   }
+
+   companion object {
+     @JvmStatic
+     fun getCurrentPhase(duration: Long): SmsExportPhase {
+-      return values().findLast { duration >= it.duration }!!
++      return PHASE_1
+     }
+   }
+ }
+diff --git a/app/src/main/java/org/thoughtcrime/securesms/megaphone/SmsExportReminderSchedule.kt b/app/src/main/java/org/thoughtcrime/securesms/megaphone/SmsExportReminderSchedule.kt
+index 17426e73c..d4afdd083 100644
+--- a/app/src/main/java/org/thoughtcrime/securesms/megaphone/SmsExportReminderSchedule.kt
++++ b/app/src/main/java/org/thoughtcrime/securesms/megaphone/SmsExportReminderSchedule.kt
+@@ -2,31 +2,16 @@ package org.thoughtcrime.securesms.megaphone
+
+ import android.content.Context
+ import androidx.annotation.WorkerThread
+-import org.thoughtcrime.securesms.keyvalue.SignalStore
+-import org.thoughtcrime.securesms.keyvalue.SmsExportPhase
+-import org.thoughtcrime.securesms.util.Util
+-import kotlin.time.Duration.Companion.days
+
+ class SmsExportReminderSchedule(private val context: Context) : MegaphoneSchedule {
+
+   companion object {
+     @JvmStatic
+-    var showPhase3Megaphone = true
++    var showPhase3Megaphone = false
+   }
+
+-  private val basicMegaphoneSchedule = RecurringSchedule(3.days.inWholeMilliseconds)
+-  private val fullScreenSchedule = RecurringSchedule(1.days.inWholeMilliseconds)
+-
+   @WorkerThread
+   override fun shouldDisplay(seenCount: Int, lastSeen: Long, firstVisible: Long, currentTime: Long): Boolean {
+-    return if (Util.isDefaultSmsProvider(context)) {
+-      when (SignalStore.misc().smsExportPhase) {
+-        SmsExportPhase.PHASE_1 -> basicMegaphoneSchedule.shouldDisplay(seenCount, lastSeen, firstVisible, currentTime)
+-        SmsExportPhase.PHASE_2 -> fullScreenSchedule.shouldDisplay(seenCount, lastSeen, firstVisible, currentTime)
+-        SmsExportPhase.PHASE_3 -> showPhase3Megaphone
+-      }
+-    } else {
+-      false
+-    }
++    return false
+   }
+ }

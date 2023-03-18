@@ -5,7 +5,7 @@
 set -euxo pipefail
 
 # Which versions of Signal to build APKs for
-versions="v6.5.0 v6.5.1 v6.5.2 v6.5.3 v6.5.4 v6.5.5 v6.5.6 v6.6.0 v6.6.1 v6.6.2 v6.6.3 v6.7.0 v6.7.1 v6.7.2 v6.7.3 v6.7.4 v6.7.5 v6.7.6 v6.8.0 v6.8.1 v6.8.2 v6.8.3 v6.9.0 v6.9.1 v6.9.2 v6.10.0 v6.10.1 v6.10.2 v6.10.3 v6.10.4 v6.10.5 v6.10.6 v6.10.7 v6.10.8 v6.10.9 v6.11.0 v6.11.1 v6.11.2 v6.11.3 v6.11.4 v6.11.5 v6.11.6 v6.11.7 v6.12.0 v6.12.1 v6.12.2 v6.12.3 v6.12.4 v6.13.8 v6.14.4"
+versions="v6.5.0 v6.5.1 v6.5.2 v6.5.3 v6.5.4 v6.5.5 v6.5.6 v6.6.0 v6.6.1 v6.6.2 v6.6.3 v6.7.0 v6.7.1 v6.7.2 v6.7.3 v6.7.4 v6.7.5 v6.7.6 v6.8.0 v6.8.1 v6.8.2 v6.8.3 v6.9.0 v6.9.1 v6.9.2 v6.10.0 v6.10.1 v6.10.2 v6.10.3 v6.10.4 v6.10.5 v6.10.6 v6.10.7 v6.10.8 v6.10.9 v6.11.0 v6.11.1 v6.11.2 v6.11.3 v6.11.4 v6.11.5 v6.11.6 v6.11.7 v6.12.0 v6.12.1 v6.12.2 v6.12.3 v6.12.4 v6.12.5 v6.12.6 v6.13.0 v6.13.1 v6.13.2 v6.13.3 v6.13.4 v6.13.5 v6.13.6 v6.13.7 v6.13.8 v6.14.0 v6.14.1 v6.14.2 v6.14.3 v6.14.4"
 
 # Check that we have some of the tools installed
 which keytool
@@ -35,15 +35,18 @@ for SIGNAL_TAG in $versions; do
   # different versions need slightly different patches
   v=$(echo $SIGNAL_TAG | tr -d '.v')
 
-  patch="patch-001-forced-upgrades-6.5.0.diff"
-  if [ "$v" -gt 6143 ]; then
+  if [ "$v" -gt 6139 ]; then
     patch="patch-001-forced-upgrades-6.14.4.diff patch-002-force-enable-sms-6.13.8.diff"
-  elif [ "$v" -gt 6137 ]; then
+  elif [ "$v" -gt 6136 ]; then
     patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.13.8.diff"
+  elif [ "$v" -gt 6110 ]; then
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.11.1.diff"
   elif [ "$v" -gt 689 ]; then
-    patch="patch-001-forced-upgrades-6.9.0.diff"
+    patch="patch-001-forced-upgrades-6.9.0.diff patch-002-force-enable-sms-6.9.0.diff"
   elif [ "$v" -gt 680 ]; then
-    patch="patch-001-forced-upgrades-6.8.1.diff"
+    patch="patch-001-forced-upgrades-6.8.1.diff patch-002-force-enable-sms-6.8.1.diff"
+  else
+    patch="patch-001-forced-upgrades-6.5.0.diff patch-002-force-enable-sms-6.5.0.diff"
   fi
 
   # skip previously built tags

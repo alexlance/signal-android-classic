@@ -42,7 +42,7 @@ index 6c44905b9..a1261e0ee 100644
      } else if (reminderActionId == R.id.reminder_action_cds_temporary_error_learn_more) {
        CdsTemporaryErrorBottomSheet.show(getChildFragmentManager());
      } else if (reminderActionId == R.id.reminder_action_cds_permanent_error_learn_more) {
-@@ -937,13 +937,9 @@ public class ConversationListFragment extends MainFragment implements ActionMode
+@@ -937,15 +937,11 @@ public class ConversationListFragment extends MainFragment implements ActionMode
      SimpleTask.run(getViewLifecycleOwner().getLifecycle(), () -> {
        if (UnauthorizedReminder.isEligible(context)) {
          return Optional.of(new UnauthorizedReminder(context));
@@ -51,6 +51,8 @@ index 6c44905b9..a1261e0ee 100644
        } else if (ServiceOutageReminder.isEligible(context)) {
          ApplicationDependencies.getJobManager().add(new ServiceOutageDetectionJob());
          return Optional.of(new ServiceOutageReminder(context));
+       } else if (Api19Reminder.isEligible()) {
+         return Optional.of(new Api19Reminder(context));
 -      } else if (OutdatedBuildReminder.isEligible()) {
 -        return Optional.of(new OutdatedBuildReminder(context));
        } else if (PushRegistrationReminder.isEligible(context)) {
