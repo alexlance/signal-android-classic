@@ -5,7 +5,7 @@ Android APK package, so that you can install a version of Signal on your device
 that works the way you would like it to work.
 
 
-### Remove the forced upgrades
+### Patch 001 Remove the forced upgrades
 
 For example I've added `patch-001-forced-upgrades.diff` that removes the forced
 version updating in the Signal app.
@@ -18,10 +18,17 @@ Feel free to submit some more patches via PRs if you have any interesting
 ideas.
 
 
+### Patch 002 Keep SMS functionality
+
+The github user `ubergeek77` has submitted patches to keep the SMS
+functionality around, and also removes the messages that nag at you.
+(Wow).
+
+
 ### Here's some I built earlier
 
-I went through every tag from Signal version 6.5.0 and upward, and rebuilt them
-all without the forced upgrade functionality. See the RELEASES page:
+I went through every tag from Signal version 6.5.0 and upward, and rebuilt Android
+packages for every version with the patches above. See the RELEASES page:
 
 https://github.com/alexlance/signal-android-classic/releases
 
@@ -36,7 +43,7 @@ everything, but here we are:
      * 30 digit backup decryption code
      * Your registration phone number able to receive SMS
      * Your Signal pin (if you set one)
-3. Uninstall Signal
+3. Uninstall Signal (you did BACK IT UP right?)
 4. Install the APK you downloaded (or built!)
 5. Walk yourself carefully through the Restore Your Backup File process
 
@@ -58,6 +65,9 @@ for a bit longer. But we'll see how that goes.
 There are obviously downsides associated with keeping older versions of software
 alive - like not receiving security updates, and potentially running software
 that is incompatible and doesn't work.
+
+But with the new 002 series of patches I am hoping to both retain the existing
+functionality and incorporate the new.
 
 
 ### How nice would it have been if...
