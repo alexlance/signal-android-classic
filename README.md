@@ -21,8 +21,7 @@ ideas.
 ### Patch 002 Keep SMS functionality
 
 The github user `ubergeek77` has submitted patches to keep the SMS
-functionality around, and also removes the messages that nag at you.
-(Wow).
+functionality around, and also removes the messages that nag at you. (Wow).
 
 
 ### Here's some I built earlier
@@ -38,43 +37,42 @@ https://github.com/alexlance/signal-android-classic/releases
 This process is not recommended unless you are insane and willing to lose
 everything, but here we are:
 
-1. Download an APK package that is the same version as the version you are currently running
-2. Backup your current Signal database, you will need the following to restore:
-     * 30 digit backup decryption code
-     * Your registration phone number able to receive SMS
+1. Download an APK package from the releases page **that is the same version** as
+   the version you are currently running
+2. Backup your current Signal database to a file and transfer it somewhere safe
+3. You will need the following to restore that backup file:
+     * Your 30 digit backup decryption code
+     * Your registration phone number, so you are able to receive confirmation SMS
      * Your Signal pin (if you set one)
-3. Uninstall Signal (you did BACK IT UP right?)
-4. Install the APK you downloaded (or built!)
-5. Walk yourself carefully through the Restore Your Backup File process
+4. Uninstall Signal **(you did back it up right?)**
+5. Install the APK you downloaded from the releases page (or built!)
+6. Walk yourself carefully through the Restore-Your-Backup-File process
+
+
+### HOW TO UPGRADE
+
+If you've previously installed an APK from the releases page (by doing the
+delete-and-restore process above) then for future upgrades you can just select
+the newer APK from the releases page and it'll be a one-click upgrade.
+
+**i.e. the first time installation is painful, but subsequent upgrades are one-click**
 
 
 ### Build your own adventure
 
 You don't have to trust my builds though because...
 
-If you've got keytool, apksigner and docker installed, you can run build.sh for
-yourself to build your own APK, transfer it to your device and perform the
+If you've got keytool, apksigner and docker installed, you can run `build.sh`
+for yourself to build your own APK, transfer it to your device and perform the
 installation steps above.
+
+Another option is to perform the build process and use Signal's reproducible
+builds facility to verify that the APKs that I've uploaded are in fact what
+they say they are.
 
 
 ### Rationale
 
 Frankly, I am hoping this will let me hold onto the SMS functionality in Signal
-for a bit longer. But we'll see how that goes.
-
-There are obviously downsides associated with keeping older versions of software
-alive - like not receiving security updates, and potentially running software
-that is incompatible and doesn't work.
-
-But with the new 002 series of patches I am hoping to both retain the existing
-functionality and incorporate the new.
-
-
-### How nice would it have been if...
-
-They could have just added an option to their app's settings like:
-
-
-![signal](https://user-images.githubusercontent.com/2713116/219929440-b547fa63-d0bc-440e-a9f0-5595d2c14b83.png)
-
+for a bit longer. But we'll see how that goes - so far so good.
 
