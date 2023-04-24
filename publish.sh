@@ -6,6 +6,9 @@ test -v 1
 test -d $1
 test -v GITHUB_TOKEN
 
+gh release delete -y ${1} || true
+git push --delete origin ${1} || true
+git tag -d ${1} || true
 git tag ${1} || true
 git push origin ${1}
 
@@ -20,7 +23,7 @@ release=$(curl -sSfL -X POST \
 url=$(echo "${release}" | jq -r .upload_url | cut -f1 -d'{')
 
 cd ${1}
-for n in *; do
+for n in *.apk; do
   i=${n//unsigned-/}
   mv $n $i || true
 
