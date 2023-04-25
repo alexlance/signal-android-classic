@@ -16,8 +16,11 @@ my-release-key.keystore:
 	  -validity 10000 \
 	  -dname "cn=Test Test, ou=Test, o=Test, c=AU"
 
-versions.txt: clone
-	cd Signal-Android && git tag | sort -V | tail -n 30 | grep -v 'v.1.2.4' | grep -v 'v.4.50.1' > ../versions.txt
+versions: clone
+	cd Signal-Android && git tag | sort -V | tail -n 30 | grep -v 'v.1.2.4' | grep -v 'v.4.50.1' | sort > ../latestversions.txt
+	ls -d v*/ | tr -d / | sort > folders.txt
+	comm -23 latestversions.txt folders.txt > versions.txt
+	rm -f latestversions.txt folders.txt
 
 clone:
 	test -d Signal-Android || git clone https://github.com/signalapp/Signal-Android
@@ -25,25 +28,18 @@ clone:
 	cd Signal-Android && git checkout main
 	cd Signal-Android && git pull
 
-build: deps clone my-release-key.keystore
-	test -n "$${VERSION}" || (echo "VERSION is not set, set it to one of the signal tags, eg VERSION=v6.16.1 make build" && exit 1)
-	./build.sh "$${VERSION}"
+v6%: deps clone my-release-key.keystore
+	./build.sh $@
+	test "$$(md5sum my-release-key.keystore | cut -c 1-3)" == "22e" && ./publish.sh $@  # only publish if we're me
 
-publish:
-	test -d $${VERSION} || (echo "No build folder found named $${VERSION}" && exit 1)
-	./publish.sh "$${VERSION}"
-
-my-builds: deps versions.txt my-release-key.keystore
+mybuilds: deps versions my-release-key.keystore
 	test -n "$${GITHUB_TOKEN}"
 	ssh-add -l
 	@echo "Going to build these versions:"
 	cat versions.txt
 	sleep 3
 	for v in $$(cat versions.txt); do \
-	  VERSION=$${v} make build; \
-	  VERSION=$${v} make publish; \
+	  make $${v}; \
 	done
 
-
-
-.PHONY: deps build clone quick
+.PHONY: deps clone versions mybuilds

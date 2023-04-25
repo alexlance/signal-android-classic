@@ -48,3 +48,5 @@ docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} rm -
 for i in ../${SIGNAL_TAG}/*.apk; do
   apksigner sign --ks ../my-release-key.keystore --ks-pass "pass:testtest" ${i}
 done
+
+echo -e "\n\nSee the ${SIGNAL_TAG}/ folder for the APK files"

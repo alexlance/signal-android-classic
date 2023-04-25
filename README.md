@@ -62,13 +62,19 @@ the newer APK from the releases page and it'll be a one-click upgrade.
 
 You don't have to trust my builds though because...
 
-If you've got keytool, apksigner and docker installed, you can run `build.sh`
-for yourself to build your own APK, transfer it to your device and perform the
-installation steps above.
+If you've got keytool, apksigner and docker installed, you can build a
+particular version by running:
+
+```
+make v6.18.1
+```
+
+Then transfer the generated APK file to your device and perform the
+reinstallation steps above.
 
 Another option is to perform the build process and use Signal's reproducible
-builds facility to verify that the APKs that I've uploaded are in fact what
-they say they are.
+builds facility to verify that the APKs that I've uploaded as releases are in
+fact what they say they are.
 
 
 ### Rationale
