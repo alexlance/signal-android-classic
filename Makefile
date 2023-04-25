@@ -39,7 +39,7 @@ mybuilds: deps versions my-release-key.keystore
 	cat versions.txt
 	sleep 3
 	for v in $$(cat versions.txt); do \
-	  make $${v}; \
+	  make $${v} || exit 1; \
 	done
 
 .PHONY: deps clone versions mybuilds
