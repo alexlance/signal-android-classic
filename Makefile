@@ -30,7 +30,7 @@ clone:
 
 v6%: deps clone my-release-key.keystore
 	./build.sh $@
-	test "$$(md5sum my-release-key.keystore | cut -c 1-3)" == "22e" && ./publish.sh $@  # only publish if we're me
+	test "$$(md5sum my-release-key.keystore | cut -c 1-3)" = "22e" && ./publish.sh $@  # only publish if we're me
 
 mybuilds: deps versions my-release-key.keystore
 	test -n "$${GITHUB_TOKEN}"
