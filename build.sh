@@ -44,7 +44,7 @@ for p in $patch; do
   git apply ../$p
 done
 (cd reproducible-builds && docker build -t signal-android:${SIGNAL_TAG} .)
-docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} ./gradlew clean assemblePlayProdRelease
+docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} bash -c 'git config --global --add safe.directory /project && ./gradlew clean assemblePlayProdRelease'
 
 mkdir -p ../${SIGNAL_TAG}
 find ./app/build/outputs/ -name "*.apk" -exec cp {} ../${SIGNAL_TAG}/ \;
