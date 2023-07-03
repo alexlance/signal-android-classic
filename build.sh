@@ -13,7 +13,9 @@ SIGNAL_TAG="${1}"
 # different versions need slightly different patches
 v=$(echo $SIGNAL_TAG | tr -d '.v')
 
-if [ "$v" -gt 6199 ]; then
+if [ "$v" -gt 6228 ]; then
+  patch="patch-001-forced-upgrades-6.23.0.diff patch-002-enable-sms-6.19.0.diff"
+elif [ "$v" -gt 6199 ]; then
   patch="patch-001-forced-upgrades-6.20.0.diff patch-002-enable-sms-6.19.0.diff"
 elif [ "$v" -gt 6189 ]; then
   patch="patch-001-forced-upgrades-6.14.4.diff patch-002-enable-sms-6.19.0.diff"
