@@ -10,8 +10,19 @@ test ! -d ${1}                   # exit if dir exists / we've built it previousl
 test -f my-release-key.keystore  # see Makefile to generate a signing key
 SIGNAL_TAG="${1}"
 
+# avoid building versions that haven't been published as stable yet
+function get_latest_stable_version {
+  curl -s 'https://updates.signal.org/android/latest.json' | jq -r .versionName
+}
+LATEST=$(get_latest_stable_version | tr -d '.v')
+
 # different versions need slightly different patches
 v=$(echo $SIGNAL_TAG | tr -d '.v')
+
+if [ "$v" -gt "$LATEST" ]; then
+  echo "Trying to build a BETA version of Signal - exiting."
+  exit 1
+fi
 
 if [ "$v" -gt 6261 ]; then
   patch="patch-001-forced-upgrades-6.23.0.diff patch-002-enable-sms-6.26.2.diff"
