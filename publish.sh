@@ -27,7 +27,7 @@ for n in *.apk; do
   i=${n//unsigned-/}
   mv $n $i || true
 
-  curl \
+  curl -sSfL \
     -X POST \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GITHUB_TOKEN}"\
