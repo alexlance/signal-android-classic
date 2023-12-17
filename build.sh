@@ -53,9 +53,22 @@ cd Signal-Android
 git reset --hard
 git checkout main
 git checkout ${SIGNAL_TAG}
+
 for p in $patch; do
-  git apply ../$p
+  echo "Applying: ${p}"
+  git apply ../${p}
 done
+
+for i in $(grep -lrs allowSmsFeatures *); do
+  echo "Patching allowSmsFeatures $i"
+  sed -i 's/SignalStore\.misc()\.getSmsExportPhase()\.allowSmsFeatures()/true/g' ${i} || true
+  sed -i 's/SignalStore\.misc()\.smsExportPhase\.allowSmsFeatures()/true/g' ${i} || true
+done
+for i in $(grep -lrs 'misc().isClientDeprecated()' *); do
+  echo "Patching isClientDeprecated $i"
+  sed -i 's/SignalStore\.misc()\.isClientDeprecated()/false/g' ${i} || true
+done
+
 (cd reproducible-builds && docker build -t signal-android:${SIGNAL_TAG} .)
 docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} bash -c 'git config --global --add safe.directory /project && ./gradlew clean assemblePlayProdRelease'
 
