@@ -14,7 +14,8 @@ SIGNAL_TAG="${1}"
 function get_latest_stable_version {
   curl -s 'https://updates.signal.org/android/latest.json' | jq -r .versionName
 }
-LATEST=$(get_latest_stable_version | tr -d '.v')
+LATEST_VERSION=$(get_latest_stable_version)
+LATEST=$(echo $LATEST_VERSION | tr -d '.v')
 
 # different versions need slightly different patches
 v=$(echo $SIGNAL_TAG | tr -d '.v')
@@ -68,6 +69,12 @@ for i in $(grep -lrs 'misc().isClientDeprecated()' *); do
   echo "Patching isClientDeprecated $i"
   sed -i 's/SignalStore\.misc()\.isClientDeprecated()/false/g' ${i} || true
 done
+
+# tempting...
+# sed -i 's/VERSION_NAME =.*$/VERSION_NAME = "'${LATEST_VERSION}'";/' app/build/generated/source/buildConfig/playProd/release/org/thoughtcrime/securesms/BuildConfig.java
+
+# getting old client detected error from the signal server, ah user-agent strings, still annoying after all these years
+sed -i 's/BuildConfig.VERSION_NAME/'"\"${LATEST_VERSION}\""'/' ./app/src/main/java/org/thoughtcrime/securesms/net/StandardUserAgentInterceptor.java
 
 (cd reproducible-builds && docker build -t signal-android:${SIGNAL_TAG} .)
 docker run --rm -v $(pwd):/project -w /project signal-android:${SIGNAL_TAG} bash -c 'git config --global --add safe.directory /project && ./gradlew clean assemblePlayProdRelease'
